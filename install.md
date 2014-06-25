@@ -21,10 +21,12 @@ permalink: /install/
 ## 2. Попробуйте поиск
 
 <input type="text" id="search" /> <input type="submit" value="Найти" />
+(<span id="status">пока страниц нет</span>)
 <br />
 <span id="search_results">Введите поисковый запрос</span>
 
 <script type="text/javascript" src="/js/zepto.min.js"></script>
+<script type="text/javascript" src="/js/worker.js"></script>
 
 <script type="text/javascript">
   var rca_key = "rca.1.1.20140616T090842Z.b9ca0702ee2f2238.f836b29417365b90f345c0686a50313b70863e1a";
@@ -35,14 +37,31 @@ permalink: /install/
 
   var pages = [];
 
+
+
   $("#urls").change(function() {
     pages = [];
+    $("#status").text("Страниц проиндексировано: 0");
 
-    $("#urls").val().split(/\s/).map(function(url) {
-      rca_fetch_page(url, function(data) {
-        pages.push(data);
-      });
+
+    var workers = [];
+    
+    for(var i=0; i < 10; i++) {
+      workers.push(new Worker());
+    }
+
+    $("#urls").val().split(/\s/).map(function(url, i) {
+      workers[i % 2].add_job(function(callback) {
+        rca_fetch_page(url, function(data) {
+          pages.push(data);
+          $("#status").text("Страниц проиндексировано: " + pages.length);
+          callback();
+        });
+      })
     });
+
+    workers.map(function(worker) { worker.work() });
+
   }).trigger("change");
 
   $("#search").keyup(function() {
