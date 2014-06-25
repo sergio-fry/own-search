@@ -12,7 +12,11 @@ permalink: /install/
 
 ## 1. Список страниц
 
-Укажите список страниц, которые попадут в поиск
+Введите URL sitemap.xml Вашего сайта:
+
+<input type="text" id="sitemap" size="40"/>
+
+Список страниц, которые попадут в поиск:
 
 <textarea id="urls" cols="80" rows="20"></textarea>
 
@@ -25,24 +29,45 @@ permalink: /install/
 <br />
 <span id="search_results">Введите поисковый запрос</span>
 
-<script type="text/javascript" src="/js/zepto.min.js"></script>
+<script type="text/javascript" src="/js/jquery.min.js"></script>
 <script type="text/javascript" src="/js/worker.js"></script>
 
 <script type="text/javascript">
   var rca_key = "rca.1.1.20140616T090842Z.b9ca0702ee2f2238.f836b29417365b90f345c0686a50313b70863e1a";
 
-  var rca_fetch_page = function(url, callback) {
-    $.getJSON("http://rca.yandex.com/?key=" + rca_key + "&url=" + url, callback);
+  var rca_fetch_page = function(url) {
+    return $.getJSON("http://rca.yandex.com/?key=" + rca_key + "&url=" + encodeURIComponent(url));
   }
 
   var pages = [];
+  var urls = [];
 
+  var fetch_urls_from_sitemap = function(sitemap_url) {
+    $.get("http://json-curl.herokuapp.com/ba-simple-proxy.php?url="+encodeURIComponent(sitemap_url), function(data) {
+      
+      urls = $(data.contents).find("url loc").map(function(i, el) {
+        return $(el).text();
+      });
 
+      $("#urls").val($.makeArray(urls).join("\n")).trigger("change");
 
-  $("#urls").change(function() {
+    }, "jsonp");
+  }
+
+  $("#sitemap").val("").change(function() {
+
+    fetch_urls_from_sitemap($(this).val());
+  });
+  
+
+  var display_status = function() {
+    $("#status").text("Страниц проиндексировано: " + pages.length + " из " + urls.length);
+  }
+
+  $("#urls").val("").change(function() {
     pages = [];
-    $("#status").text("Страниц проиндексировано: 0");
 
+    display_status();
 
     var workers = [];
     
@@ -51,12 +76,11 @@ permalink: /install/
     }
 
     $("#urls").val().split(/\s/).map(function(url, i) {
-      workers[i % 2].add_job(function(callback) {
-        rca_fetch_page(url, function(data) {
+      workers[i % workers.length].add_job(function(callback) {
+        rca_fetch_page(url).done(function(data) {
           pages.push(data);
-          $("#status").text("Страниц проиндексировано: " + pages.length);
-          callback();
-        });
+          display_status();
+        }).always(callback);
       })
     });
 

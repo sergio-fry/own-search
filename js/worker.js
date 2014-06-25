@@ -11,7 +11,6 @@
   //
   // worker.work();
   Worker.prototype.add_job = function(job) {
-    console.log("job added");
     this.jobs.push(job);
   }
 
