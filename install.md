@@ -43,7 +43,7 @@ permalink: /install/
   var urls = [];
 
   var fetch_urls_from_sitemap = function(sitemap_url) {
-    $.get("http://json-curl.herokuapp.com/ba-simple-proxy.php?url="+encodeURIComponent(sitemap_url), function(data) {
+    return $.get("http://json-curl.herokuapp.com/ba-simple-proxy.php?url="+encodeURIComponent(sitemap_url.trim()), function(data) {
       
       urls = $(data.contents).find("url loc").map(function(i, el) {
         return $(el).text();
@@ -55,8 +55,12 @@ permalink: /install/
   }
 
   $("#sitemap").val("").change(function() {
+    var loader = $("<img src='/img/loader.gif' />");
+    $("#sitemap").after(loader);
 
-    fetch_urls_from_sitemap($(this).val());
+    fetch_urls_from_sitemap($(this).val()).always(function() {
+      loader.remove();
+    });;
   });
   
 
@@ -77,7 +81,7 @@ permalink: /install/
 
     $("#urls").val().split(/\s/).map(function(url, i) {
       workers[i % workers.length].add_job(function(callback) {
-        rca_fetch_page(url).done(function(data) {
+        rca_fetch_page(url.trim()).done(function(data) {
           pages.push(data);
           display_status();
         }).always(callback);
