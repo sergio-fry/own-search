@@ -63,8 +63,9 @@ permalink: /install/
     if($(this).val().trim() != "") {
       search = new sp_Poisk({ sitemap_url: $(this).val(), el: "#sp-search" });
       $("#search-example").show();
+      $("#sitemap .status").text("");
     } else {
-      alert("Введите адрес sitemap.xml");
+      $("#sitemap .status").text("Введите адрес sitemap.xml");
       $("#search-example").hide();
     }
   });
