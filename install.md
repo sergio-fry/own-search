@@ -9,6 +9,14 @@ permalink: /install/
 Замените SITEMAP_URL на URL sitemap.xml для Вашего сайта. Вставьте код там, где должен отображаться поиск.
 
 {% highlight html %}
+<div id="sp-search">
+  <h1>Поиск по сайту</h1>
+  <input type="text" class="sp-query" placeholder="введите поисковый зпрос" value="" /> <input type="submit" value="Найти" class="sp-find-button" />
+  <span class="sp-status"></span>
+  <br />
+  <span class="sp-results"></span>
+</div>
+
 <script type="text/javascript" src="http://yandex.st/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript" src="http://svoy-poisk.sergei-udalov.ru/js/search.js"></script>
 
